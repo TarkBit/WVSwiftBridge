@@ -1,11 +1,3 @@
-//
-//  LeakAvoider.m
-//  ExampleApp-iOS
-//
-//  Created by 侯森魁 on 2020/4/20.
-//  Copyright © 2020 Marcus Westin. All rights reserved.
-//
-
 #import "WebViewJavascriptLeakAvoider.h"
 
 @implementation WebViewJavascriptLeakAvoider
