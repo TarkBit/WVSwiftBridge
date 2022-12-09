@@ -1,7 +1,6 @@
-[Please Jump 请使用这个库，它更加完善](https://github.com/SDBridge/SDBridgeOC) to [here](https://github.com/SDBridge/SDBridgeOC).
 
 
-WebViewJavascriptBridge
+WVSwiftBridge
 =======================
 
 An iOS/OSX bridge for sending messages between Obj-C and JavaScript in WKWebViews. Also easy to get js console.log.
@@ -16,7 +15,7 @@ How to use ?
 Add this to your [podfile](https://guides.cocoapods.org/using/getting-started.html) and run `pod install` to install:
 
 ```ruby
-pod 'SKJavaScriptBridge', '~> 1.0.3'
+pod 'WVSwiftBridge' 
 ```
 If you can't find the last version, maybe you need to update local pod repo.
 ```ruby
