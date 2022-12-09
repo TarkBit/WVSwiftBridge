@@ -1,9 +1,9 @@
 #import <Foundation/Foundation.h>
-#import "WebViewJavascriptBridgeBase.h"
+#import "WVSwiftBridgeBase.h"
 #import <WebKit/WebKit.h>
 NS_ASSUME_NONNULL_BEGIN
 
-@interface WebViewJavascriptBridge : NSObject<WebViewJavascriptBridgeBaseDelegate,WKScriptMessageHandler>
+@interface WVSwiftBridge : NSObject<WVSwiftBridgeBaseDelegate,WKScriptMessageHandler>
 
 + (instancetype)bridgeForWebView:(WKWebView*)webView
                    showJSconsole:(BOOL)show

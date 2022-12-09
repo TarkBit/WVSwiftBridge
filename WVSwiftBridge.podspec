@@ -29,7 +29,7 @@ Pod::Spec.new do |s|
                     Chinese :更简单、更轻、更易使用的原生和 JavaScript框架.
                    DESC
 
-  s.homepage     = "https://github.com/housenkui/JavaScriptBridge"
+  s.homepage     = "https://github.com/TarkBit/WVSwiftBridge"
   # s.screenshots  = "www.example.com/screenshots_1.gif", "www.example.com/screenshots_2.gif"
 
 

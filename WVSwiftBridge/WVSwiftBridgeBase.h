@@ -1,15 +1,15 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@protocol WebViewJavascriptBridgeBaseDelegate <NSObject>
+@protocol WVSwiftBridgeBaseDelegate <NSObject>
 - (NSString*) _evaluateJavascript:(NSString*)javascriptCommand;
 @end
 typedef NSDictionary WVJBMessage;
 typedef void (^WVJBResponseCallback)(id responseData);
 typedef void (^WVJBHandler)(id data, WVJBResponseCallback responseCallback);
 
-@interface WebViewJavascriptBridgeBase : NSObject
-@property (weak, nonatomic) id <WebViewJavascriptBridgeBaseDelegate> delegate;
+@interface WVSwiftBridgeBase : NSObject
+@property (weak, nonatomic) id <WVSwiftBridgeBaseDelegate> delegate;
 @property (strong, nonatomic) NSMutableDictionary* responseCallbacks;
 @property (strong, nonatomic) NSMutableDictionary* messageHandlers;
 @property (strong, nonatomic) WVJBHandler messageHandler;

@@ -1,6 +1,6 @@
-#import "WebViewJavascriptLeakAvoider.h"
+#import "WVSwiftBridgeLeakAvoider.h"
 
-@implementation WebViewJavascriptLeakAvoider
+@implementation WVSwiftBridgeLeakAvoider
 - (instancetype)initWithDelegate:(id <WKScriptMessageHandler> )delegate {
     if (self = [super init]) {
         self.delegate = delegate;

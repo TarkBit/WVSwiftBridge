@@ -1,5 +1,5 @@
-#import "WebViewJavascriptBridgeBase.h"
-@implementation WebViewJavascriptBridgeBase {
+#import "WVSwiftBridgeBase.h"
+@implementation WVSwiftBridgeBase {
      long _uniqueId;
 }
 - (instancetype)init {
@@ -32,14 +32,14 @@
 
 - (void)flushMessageQueue:(NSString *)messageQueueString{
     if (messageQueueString == nil || messageQueueString.length == 0) {
-        NSLog(@"WebViewJavascriptBridge: WARNING: ObjC got nil while fetching the message queue JSON from webview. This can happen if the WebViewJavascriptBridge JS is not currently present in the webview, e.g if the webview just loaded a new page.");
+        NSLog(@"WVSwiftBridge: WARNING: ObjC got nil while fetching the message queue JSON from webview. This can happen if the WVSwiftBridge JS is not currently present in the webview, e.g if the webview just loaded a new page.");
         return;
     }
 
     id messages = [self _deserializeMessageJSON:messageQueueString];
     for (WVJBMessage* message in messages) {
         if (![message isKindOfClass:[WVJBMessage class]]) {
-            NSLog(@"WebViewJavascriptBridge: WARNING: Invalid %@ received: %@", [message class], message);
+            NSLog(@"WVSwiftBridge: WARNING: Invalid %@ received: %@", [message class], message);
             continue;
         }
         NSString* responseId = message[@"responseId"];

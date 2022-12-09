@@ -1,11 +1,11 @@
-#import "WebViewJavascriptBridge.h"
-#import "WebViewJavascriptLeakAvoider.h"
+#import "WVSwiftBridge.h"
+#import "WVSwiftBridgeLeakAvoider.h"
 #define kBridgePrefix @"__bridge__"
 
-@implementation WebViewJavascriptBridge  {
+@implementation WVSwiftBridge  {
        WKWebView* _webView;
        long _uniqueId;
-       WebViewJavascriptBridgeBase *_base;
+    WVSwiftBridgeBase *_base;
        BOOL _showJSconsole;
        BOOL _enableLogging;
 }
@@ -13,7 +13,7 @@
 + (instancetype)bridgeForWebView:(WKWebView*)webView
                    showJSconsole:(BOOL)show
                    enableLogging:(BOOL)enable {
-    WebViewJavascriptBridge* bridge = [[self alloc] init];
+    WVSwiftBridge* bridge = [[self alloc] init];
     [bridge _setupInstance:webView showJSconsole:show enableLogging:enable];
     return bridge;
 }
@@ -41,7 +41,7 @@
 
 - (void)_setupInstance:(WKWebView*)webView showJSconsole:(BOOL)show enableLogging:(BOOL)enable{
     _webView = webView;
-    _base = [[WebViewJavascriptBridgeBase alloc] init];
+    _base = [[WVSwiftBridgeBase alloc] init];
     _base.delegate = self;
     _showJSconsole = show;
     _enableLogging = enable;
@@ -58,18 +58,18 @@
     }
 }
 - (void)_injectJavascriptFile {
-    NSString *bridge_js = WebViewJavascriptBridge_js();
+    NSString *bridge_js = WVSwiftBridge_js();
     //injected the method when H5 starts to create the DOM tree
     WKUserScript * bridge_userScript = [[WKUserScript alloc]initWithSource:bridge_js injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
     [_webView.configuration.userContentController addUserScript:bridge_userScript];
     if (_showJSconsole) {
-        NSString *console_log_js = WebViewJavascriptBridge_console_log_js();
+        NSString *console_log_js = WVSwiftBridge_console_log_js();
         WKUserScript * console_log_userScript = [[WKUserScript alloc]initWithSource:console_log_js injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
         [_webView.configuration.userContentController addUserScript:console_log_userScript];
     }
 }
 - (void) addScriptMessageHandler {
-    [_webView.configuration.userContentController addScriptMessageHandler:[[WebViewJavascriptLeakAvoider alloc]initWithDelegate:self] name:@"pipe"];
+    [_webView.configuration.userContentController addScriptMessageHandler:[[WVSwiftBridgeLeakAvoider alloc]initWithDelegate:self] name:@"pipe"];
 }
 
 - (void)removeScriptMessageHandler {
@@ -96,7 +96,7 @@
     [self removeScriptMessageHandler];
 }
 
-NSString * WebViewJavascriptBridge_js() {
+NSString * WVSwiftBridge_js(void) {
 #define __WVJB_js_func__(x) #x
     
     // BEGIN preprocessorJSCode
@@ -162,7 +162,7 @@ NSString * WebViewJavascriptBridge_js() {
                     }
                     var handler = messageHandlers[message.handlerName];
                     if (!handler) {
-                        console.log("WebViewJavascriptBridge: WARNING: no handler for message from ObjC:", message);
+                        console.log("WVSwiftBridge: WARNING: no handler for message from ObjC:", message);
                     } else {
                         handler(message.data, responseCallback);
                     }
@@ -179,7 +179,7 @@ NSString * WebViewJavascriptBridge_js() {
     return preprocessorJSCode;
 };
 
-NSString * WebViewJavascriptBridge_console_log_js() {
+NSString * WVSwiftBridge_console_log_js(void) {
 #define __WVJB_js_func__(x) #x
     
     // BEGIN preprocessorJSCode
