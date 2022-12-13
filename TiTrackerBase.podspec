@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
   #  summary should be tweet-length, and the description more in depth.
   #
 
-  s.name         = "WVSwiftBridge"
+  s.name         = "TiTrackerBase"
   s.version      = "1.0.0"
   s.summary      = "More simple more light more easy to use for iOS/OSX bridge with Javascript. Also can get js console.log ~"
 

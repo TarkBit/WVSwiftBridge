@@ -1,5 +1,5 @@
-#import "WVSwiftBridgeBase.h"
-@implementation WVSwiftBridgeBase {
+#import "TiTrackerBase.h"
+@implementation TiTrackerBase {
      long _uniqueId;
 }
 - (instancetype)init {
@@ -32,14 +32,14 @@
 
 - (void)flushMessageQueue:(NSString *)messageQueueString{
     if (messageQueueString == nil || messageQueueString.length == 0) {
-        NSLog(@"WVSwiftBridge: WARNING: ObjC got nil while fetching the message queue JSON from webview. This can happen if the WVSwiftBridge JS is not currently present in the webview, e.g if the webview just loaded a new page.");
+        NSLog(@"TiTrackerBridge: WARNING: ObjC got nil while fetching the message queue JSON from webview. This can happen if the TiTrackerBridge JS is not currently present in the webview, e.g if the webview just loaded a new page.");
         return;
     }
 
     id messages = [self _deserializeMessageJSON:messageQueueString];
     for (WVJBMessage* message in messages) {
         if (![message isKindOfClass:[WVJBMessage class]]) {
-            NSLog(@"WVSwiftBridge: WARNING: Invalid %@ received: %@", [message class], message);
+            NSLog(@"TiTrackerBridge: WARNING: Invalid %@ received: %@", [message class], message);
             continue;
         }
         NSString* responseId = message[@"responseId"];
@@ -85,8 +85,8 @@
     return [NSJSONSerialization JSONObjectWithData:[messageJSON dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil];
 }
 
-- (void) _evaluateJavascript:(NSString *)javascriptCommand {
-    [self.delegate _evaluateJavascript:javascriptCommand];
+- (void) _evaluateJavascript:(NSString *)command {
+    [self.delegate _evaluateJavascript:command];
 }
 
 - (void)_dispatchMessage:(WVJBMessage*)message {
@@ -100,13 +100,13 @@
     messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\u2028" withString:@"\\u2028"];
     messageJSON = [messageJSON stringByReplacingOccurrencesOfString:@"\u2029" withString:@"\\u2029"];
     
-    NSString* javascriptCommand = [NSString stringWithFormat:@"WebViewJavascriptBridge._handleMessageFromObjC('%@');", messageJSON];
+    NSString* command = [NSString stringWithFormat:@"WebViewJavascriptBridge._handleTracker('%@');", messageJSON];
     if ([[NSThread currentThread] isMainThread]) {
-        [self _evaluateJavascript:javascriptCommand];
+        [self _evaluateJavascript:command];
 
     } else {
         dispatch_sync(dispatch_get_main_queue(), ^{
-            [self _evaluateJavascript:javascriptCommand];
+            [self _evaluateJavascript:command];
         });
     }
 }

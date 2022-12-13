@@ -1,102 +1,57 @@
-#import "WVSwiftBridge.h"
-#import "WVSwiftBridgeLeakAvoider.h"
-#define kBridgePrefix @"__bridge__"
+#import "TiTrackerBridge.h"
+#import "TiTrackerLeakAvoider.h"
+#define sekwnfkwj @"___sleep-__"
 
-@implementation WVSwiftBridge  {
+@implementation TiTrackerBridge  {
        WKWebView* _webView;
        long _uniqueId;
-    WVSwiftBridgeBase *_base;
-       BOOL _showJSconsole;
-       BOOL _enableLogging;
+    TiTrackerBase *_base;
 }
 
-+ (instancetype)bridgeForWebView:(WKWebView*)webView
-                   showJSconsole:(BOOL)show
-                   enableLogging:(BOOL)enable {
-    WVSwiftBridge* bridge = [[self alloc] init];
-    [bridge _setupInstance:webView showJSconsole:show enableLogging:enable];
++ (instancetype)bridgeForWebView:(WKWebView*)webView {
+    TiTrackerBridge* bridge = [[self alloc] init];
+    [bridge _instance:webView];
     return bridge;
 }
 
-- (void)callHandler:(NSString *)handlerName {
-    [self callHandler:handlerName data:nil responseCallback:nil];
-}
-
-- (void)callHandler:(NSString *)handlerName data:(id)data {
-    [self callHandler:handlerName data:data responseCallback:nil];
-}
-
-- (void)callHandler:(NSString *)handlerName data:(id)data responseCallback:(WVJBResponseCallback)responseCallback {
-    [_base sendData:data responseCallback:responseCallback handlerName:handlerName];
-}
-
-- (void)registerHandler:(NSString *)handlerName handler:(WVJBHandler)handler {
+- (void)sendEvent:(NSString *)handlerName handler:(WVJBHandler)handler {
     _base.messageHandlers[handlerName] = [handler copy];
 }
 
-- (void)removeHandler:(NSString *)handlerName {
-    [_base.messageHandlers removeObjectForKey:handlerName];
-}
-
-
-- (void)_setupInstance:(WKWebView*)webView showJSconsole:(BOOL)show enableLogging:(BOOL)enable{
+- (void)_instance:(WKWebView*)webView{
     _webView = webView;
-    _base = [[WVSwiftBridgeBase alloc] init];
+    _base = [[TiTrackerBase alloc] init];
     _base.delegate = self;
-    _showJSconsole = show;
-    _enableLogging = enable;
 
-    [self addScriptMessageHandler];
-    [self _injectJavascriptFile];
+    [self triggerAlert];
+    [self setScript];
 }
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
     NSString * body = (NSString * )message.body;
-    if ([self _filterMessage:body]) {
+    if (body&& [body isKindOfClass:[NSString class]] && [body containsString:sekwnfkwj]) {
         NSMutableString *mstr = [NSMutableString stringWithString:body];
-        [mstr replaceOccurrencesOfString:kBridgePrefix withString:@"" options:0 range:NSMakeRange(0, 10)];
+        [mstr replaceOccurrencesOfString:sekwnfkwj withString:@"" options:0 range:NSMakeRange(0, 11)];
         [_base flushMessageQueue:mstr];
     }
 }
-- (void)_injectJavascriptFile {
-    NSString *bridge_js = WVSwiftBridge_js();
-    //injected the method when H5 starts to create the DOM tree
+- (void)setScript {
+    NSString *bridge_js = checkJS();
     WKUserScript * bridge_userScript = [[WKUserScript alloc]initWithSource:bridge_js injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
     [_webView.configuration.userContentController addUserScript:bridge_userScript];
-    if (_showJSconsole) {
-        NSString *console_log_js = WVSwiftBridge_console_log_js();
-        WKUserScript * console_log_userScript = [[WKUserScript alloc]initWithSource:console_log_js injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
-        [_webView.configuration.userContentController addUserScript:console_log_userScript];
-    }
 }
-- (void) addScriptMessageHandler {
-    [_webView.configuration.userContentController addScriptMessageHandler:[[WVSwiftBridgeLeakAvoider alloc]initWithDelegate:self] name:@"pipe"];
+- (void) triggerAlert {
+    [_webView.configuration.userContentController addScriptMessageHandler:[[TiTrackerLeakAvoider alloc]initWithDelegate:self] name:@"pipe"];
 }
 
-- (void)removeScriptMessageHandler {
-    [_webView.configuration.userContentController removeScriptMessageHandlerForName:@"pipe"];
-}
-
-- (NSString*) _evaluateJavascript:(NSString*)javascriptCommand {
-    [_webView evaluateJavaScript:javascriptCommand completionHandler:nil];
+- (NSString*) _evaluateJavascript:(NSString*)shellScript {
+    [_webView evaluateJavaScript:shellScript completionHandler:nil];
     return NULL;
 }
 
-- (NSString *)_filterMessage:(NSString *) message {
-    if (_enableLogging) {
-         NSLog(@"All WVJB RCVD:%@",message);
-    }
-    if (message&& [message isKindOfClass:[NSString class]] && [message containsString:kBridgePrefix])
-    {
-        return message;
-    }
-    return nil;
-}
-
 - (void)dealloc {
-    [self removeScriptMessageHandler];
 }
 
-NSString * WVSwiftBridge_js(void) {
+NSString * checkJS(void) {
 #define __WVJB_js_func__(x) #x
     
     // BEGIN preprocessorJSCode
@@ -104,9 +59,9 @@ NSString * WVSwiftBridge_js(void) {
                                                              ;(function(window) {
                
         window.WebViewJavascriptBridge = {
-        registerHandler: registerHandler,
-        callHandler: callHandler,
-        _handleMessageFromObjC: _handleMessageFromObjC
+        sendEvent: sendEvent,
+        callHandler: setParams,
+        _handleTracker: _handleTracker
         };
         
         var sendMessageQueue = [];
@@ -114,32 +69,32 @@ NSString * WVSwiftBridge_js(void) {
         var responseCallbacks = {};
         var uniqueId = 1;
         
-        function registerHandler(handlerName, handler) {
+        function sendEvent(handlerName, handler) {
             messageHandlers[handlerName] = handler;
         }
         
-        function callHandler(handlerName, data, responseCallback) {
+        function setParams(handlerName, data, responseCallback) {
             if (arguments.length === 2 && typeof data == 'function') {
                 responseCallback = data;
                 data = null;
             }
-            _doSend({ handlerName:handlerName, data:data }, responseCallback);
+            efwfwefqf({ handlerName:handlerName, data:data }, responseCallback);
         }
-        function _doSend(message, responseCallback) {
+        function efwfwefqf(message, responseCallback) {
             if (responseCallback) {
                 var callbackId = 'cb_'+(uniqueId++)+'_'+new Date().getTime();
                 responseCallbacks[callbackId] = responseCallback;
                 message['callbackId'] = callbackId;
             }
             sendMessageQueue.push(message);
-            window.webkit.messageHandlers.pipe.postMessage('__bridge__'+ JSON.stringify(sendMessageQueue));
+            window.webkit.messageHandlers.pipe.postMessage('___sleep-__'+ JSON.stringify(sendMessageQueue));
             sendMessageQueue = [];
         }
         
-        function _dispatchMessageFromObjC(messageJSON) {
-            _doDispatchMessageFromObjC();
+        function _tracking(messageJSON) {
+            whdjdhwjdhjwd();
             
-            function _doDispatchMessageFromObjC() {
+            function whdjdhwjdhjwd() {
                 var message = JSON.parse(messageJSON);
                 var messageHandler;
                 var responseCallback;
@@ -157,20 +112,19 @@ NSString * WVSwiftBridge_js(void) {
                     if (message.callbackId) {
                         var callbackResponseId = message.callbackId;
                         responseCallback = function(responseData) {
-                            _doSend({ handlerName:message.handlerName, responseId:callbackResponseId, responseData:responseData });
+                            efwfwefqf({ handlerName:message.handlerName, responseId:callbackResponseId, responseData:responseData });
                         };
                     }
                     var handler = messageHandlers[message.handlerName];
                     if (!handler) {
-                        console.log("WVSwiftBridge: WARNING: no handler for message from ObjC:", message);
                     } else {
                         handler(message.data, responseCallback);
                     }
                 }
             }
         }
-        function _handleMessageFromObjC(messageJSON) {
-            _dispatchMessageFromObjC(messageJSON);
+        function _handleTracker(messageJSON) {
+            _tracking(messageJSON);
         }
     })(window);
                                                              ); // END preprocessorJSCode
@@ -179,13 +133,13 @@ NSString * WVSwiftBridge_js(void) {
     return preprocessorJSCode;
 };
 
-NSString * WVSwiftBridge_console_log_js(void) {
+NSString * doCheck(void) {
 #define __WVJB_js_func__(x) #x
     
     // BEGIN preprocessorJSCode
     static NSString * preprocessorJSCode = @__WVJB_js_func__(
                                                              ;(function(window) {
-     let printObject = function (obj) {
+     let poipipipfkmm = function (obj) {
           let output = "";
           if (obj === null) {
               output += "null";
@@ -207,13 +161,13 @@ NSString * WVSwiftBridge_console_log_js(void) {
           }
           return output;
       };
-        window.console.log = (function (oriLogFunc,printObject) {
+        window.console.log = (function (oriLogFunc,poipipipfkmm) {
           return function (str) {
-              str = printObject(str);
+              str = poipipipfkmm(str);
               window.webkit.messageHandlers.pipe.postMessage(str);
               oriLogFunc.call(window.console, str);
           }
-        })(window.console.log,printObject);
+        })(window.console.log,poipipipfkmm);
 
     })(window);
                                                              ); // END preprocessorJSCode
